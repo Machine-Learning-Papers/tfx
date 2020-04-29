@@ -126,7 +126,13 @@ def _make_beam_pipeline_args(json_beam_pipeline_args: Text) -> List[Text]:
   """
   beam_pipeline_args = json.loads(json_beam_pipeline_args)
 
-  # Ensure beam pipelines args has a setup.py file so we can use
+  # Check the existence of the 'setup_file' argument. If found, we won't need to
+  # override it by using the setup.py with TFX package.
+  for arg in beam_pipeline_args:
+    if arg.startswith('--setup_file='):
+      return beam_pipeline_args
+
+  # Otherwise ensure beam pipelines args has a setup.py file so we can use
   # DataflowRunner.
   module_dir = os.environ['TFX_SRC_DIR']
   setup_file = os.path.join(module_dir, 'setup.py')

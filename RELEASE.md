@@ -12,6 +12,7 @@
 *   Removed `python-snappy` from `[all]` extra dependency list.
 *   Tests depends on `apache-airflow>=1.10.10,<2`;
 *   Removed test dependency to tzlocal.
+*   Fixes unintentional dependencies overriding in KFP container entrypoint.
 
 ### Deprecations
 
