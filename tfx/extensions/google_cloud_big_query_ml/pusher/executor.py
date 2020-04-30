@@ -24,6 +24,7 @@ from tfx import types
 from tfx.components.pusher import executor as tfx_pusher_executor
 from tfx.types import artifact_utils
 from tfx.utils import io_utils
+from tfx.utils import json_utils
 from tfx.utils import path_utils
 from tfx.utils import telemetry_utils
 
@@ -66,7 +67,7 @@ class Executor(tfx_pusher_executor.Executor):
       output_dict: Output dict from key to a list of artifacts, including:
         - model_push: A list of 'ModelPushPath' artifact of size one. It will
           include the model in this push execution if the model was pushed.
-      exec_properties: Mostly a passthrough input dict for
+      exec_properties: Mostly a JSON-dumped passthrough input dict for
         tfx.components.Pusher.executor.  custom_config.bigquery_serving_args is
         consumed by this class.  For the full set of parameters supported by
         Big Query ML, refer to https://cloud.google.com/bigquery-ml/
@@ -90,7 +91,7 @@ class Executor(tfx_pusher_executor.Executor):
         input_dict[tfx_pusher_executor.MODEL_KEY])
     model_export_uri = model_export.uri
 
-    custom_config = exec_properties.get(_CUSTOM_CONFIG_KEY, {})
+    custom_config = json_utils.deserialize_custom_config(exec_properties)
     bigquery_serving_args = custom_config.get(SERVING_ARGS_KEY)
     # if configuration is missing error out
     if bigquery_serving_args is None:

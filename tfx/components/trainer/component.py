@@ -115,7 +115,7 @@ class Trainer(base_component.BaseComponent):
       trainer_fn: Optional[Union[Text, data_types.RuntimeParameter]] = None,
       train_args: Union[trainer_pb2.TrainArgs, Dict[Text, Any]] = None,
       eval_args: Union[trainer_pb2.EvalArgs, Dict[Text, Any]] = None,
-      custom_config: Optional[Dict[Text, Any]] = None,
+      custom_config: Optional[Text] = None,
       custom_executor_spec: Optional[executor_spec.ExecutorSpec] = None,
       output: Optional[types.Channel] = None,
       transform_output: Optional[types.Channel] = None,
@@ -175,8 +175,8 @@ class Trainer(base_component.BaseComponent):
         used for evaluation. Current only num_steps is available. If it's
         provided as a dict and any field is a RuntimeParameter, it should have
         the same field names as a EvalArgs proto message.
-      custom_config: A dict which contains addtional training job parameters
-        that will be passed into user module.
+      custom_config: A JSON-serialized dict which contains addtional training
+        job parameters that will be passed into user module.
       custom_executor_spec: Optional custom executor spec.
       output: Optional `Model` channel for result of exported models.
       transform_output: Backwards compatibility alias for the 'transform_graph'

@@ -36,6 +36,7 @@ from tfx.proto import trainer_pb2
 from tfx.types import artifact_utils
 from tfx.utils import import_utils
 from tfx.utils import io_utils
+from tfx.utils import json_utils
 from tfx.utils import path_utils
 
 # Key for base model in executor input_dict.
@@ -136,10 +137,7 @@ class GenericExecutor(base_executor.BaseExecutor):
   def _GetFnArgs(self, input_dict: Dict[Text, List[types.Artifact]],
                  output_dict: Dict[Text, List[types.Artifact]],
                  exec_properties: Dict[Text, Any]) -> TrainerFnArgs:
-    custom_config = exec_properties.get('custom_config') or {}
-    if not isinstance(custom_config, dict):
-      raise ValueError('Expect custom_config to be a dict but got %s instead' %
-                       type(custom_config))
+    custom_config = json_utils.deserialize_custom_config(exec_properties) or {}
 
     # Set up training parameters
     train_files = [

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
+import copy
 import importlib
 import inspect
 import json
@@ -36,6 +37,7 @@ _TFX_OBJECT_TYPE_KEY = '__tfx_object_type__'
 _MODULE_KEY = '__module__'
 _CLASS_KEY = '__class__'
 _PROTO_VALUE_KEY = '__proto_value__'
+_CUSTOM_CONFIG_KEY = 'custom_config'
 
 RUNTIME_PARAMETER_PATTERN = (r'({\\*"__class__\\*": \\*"RuntimeParameter\\*", '
                              r'.*?})')
@@ -191,3 +193,36 @@ def dumps(obj: Any) -> Text:
 def loads(s: Text) -> Any:
   """Loads a JSON into an object with Jsonable decoding."""
   return json.loads(s, cls=_DefaultDecoder)
+
+
+def deserialize_custom_config(
+    exec_properties: Dict[Text, Any]) -> Dict[Text, Any]:
+  """Deserializes exec_properties['custom_config'] into dict object.
+
+  Args:
+    exec_properties: Execution properties, should be a mapping from string to a
+      primitive typed value.
+
+  Returns:
+    A dict of custom config found in the exec_properties.
+
+  Raises:
+    ValueError: if custom config cannot be found in the exec_properties.
+  """
+  custom_config = json.loads(exec_properties.get(_CUSTOM_CONFIG_KEY, 'null'))
+  if not custom_config:
+    return {}
+  if not isinstance(custom_config, Dict):
+    raise ValueError('custom_config in execution properties needs to be a '
+                     'dict.')
+
+  exec_properties[_CUSTOM_CONFIG_KEY] = custom_config
+  return custom_config
+
+
+def serialize_custom_config(
+    exec_properties: Dict[Text, Any]) -> Dict[Text, Text]:
+  """Serializes the custom_config in execution properties."""
+  result = copy.deepcopy(exec_properties)
+  result['custom_config'] = json.dumps(result['custom_config'])
+  return result

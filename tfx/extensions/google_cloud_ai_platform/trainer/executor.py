@@ -19,13 +19,11 @@ from __future__ import print_function
 
 from typing import Any, Dict, List, Text
 
-import absl
-
 from tfx import types
 from tfx.components.base import base_executor
 from tfx.components.trainer import executor as tfx_trainer_executor
 from tfx.extensions.google_cloud_ai_platform import runner
-
+from tfx.utils import json_utils
 
 # Keys to the items in custom_config passed as a part of exec_properties.
 TRAINING_ARGS_KEY = 'ai_platform_training_args'
@@ -46,7 +44,7 @@ class GenericExecutor(base_executor.BaseExecutor):
     Args:
       input_dict: Passthrough input dict for tfx.components.Trainer.executor.
       output_dict: Passthrough input dict for tfx.components.Trainer.executor.
-      exec_properties: Mostly a passthrough input dict for
+      exec_properties: Mostly a passthrough JSON-dumped input dict for
         tfx.components.Trainer.executor. custom_config.ai_platform_training_args
         and custom_config.ai_platform_training_job_id are consumed by this
         class.  For the full set of parameters supported by Google Cloud AI
@@ -62,12 +60,9 @@ class GenericExecutor(base_executor.BaseExecutor):
     """
     self._log_startup(input_dict, output_dict, exec_properties)
 
-    custom_config = exec_properties.get('custom_config', {})
+    custom_config = json_utils.deserialize_custom_config(exec_properties)
+
     training_inputs = custom_config.get(TRAINING_ARGS_KEY)
-    if training_inputs is None:
-      err_msg = '\'%s\' not found in custom_config.' % TRAINING_ARGS_KEY
-      absl.logging.error(err_msg)
-      raise ValueError(err_msg)
 
     job_id = custom_config.get(JOB_ID_KEY)
 

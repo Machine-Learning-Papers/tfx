@@ -25,6 +25,7 @@ from tfx.components.pusher import executor as tfx_pusher_executor
 from tfx.extensions.google_cloud_ai_platform import runner
 from tfx.types import artifact_utils
 from tfx.utils import io_utils
+from tfx.utils import json_utils
 from tfx.utils import path_utils
 
 
@@ -35,8 +36,6 @@ _CAIP_MODEL_VERSION_PATH_FORMAT = (
 
 # Keys to the items in custom_config passed as a part of exec_properties.
 SERVING_ARGS_KEY = 'ai_platform_serving_args'
-# Keys for custom_config.
-_CUSTOM_CONFIG_KEY = 'custom_config'
 
 
 class Executor(tfx_pusher_executor.Executor):
@@ -54,7 +53,7 @@ class Executor(tfx_pusher_executor.Executor):
       output_dict: Output dict from key to a list of artifacts, including:
         - model_push: A list of 'ModelPushPath' artifact of size one. It will
           include the model in this push execution if the model was pushed.
-      exec_properties: Mostly a passthrough input dict for
+      exec_properties: Mostly a passthrough JSON-dumped input dict for
         tfx.components.Pusher.executor.  custom_config.ai_platform_serving_args
         is consumed by this class.  For the full set of parameters supported by
         Google Cloud AI Platform, refer to
@@ -76,8 +75,7 @@ class Executor(tfx_pusher_executor.Executor):
     model_export = artifact_utils.get_single_instance(
         input_dict[tfx_pusher_executor.MODEL_KEY])
 
-    exec_properties_copy = exec_properties.copy()
-    custom_config = exec_properties_copy.pop(_CUSTOM_CONFIG_KEY, {})
+    custom_config = json_utils.deserialize_custom_config(exec_properties)
     ai_platform_serving_args = custom_config.get(SERVING_ARGS_KEY)
     if not ai_platform_serving_args:
       raise ValueError(
